@@ -26,7 +26,7 @@ argv.report    && require('hardhat-gas-reporter');
 
 const settings = {
   optimizer: {
-    enabled: argv.mode === 'production',
+    enabled: argv.mode === 'production' || argv.report,
     runs: 999,
   },
 };
