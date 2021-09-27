@@ -41,15 +41,11 @@ describe('Random', function () {
 
         expect(await this.instance.remaining()).to.be.equal(2);
 
-        expect(await Promise.all([
-                this.instance.draw(),
-                this.instance.draw(),
-            ].map(txPromise => txPromise
-                .then(tx      => tx.wait())
-                .then(receipt => receipt.events.find(event => event.event === 'ReturnValue'))
-                .then(event   => event.args.result.toNumber())
-            )
-        )).to.have.members([ 17, 42 ]);
+        expect(await Promise.all(Array(2).fill().map(_ => this.instance.draw()
+            .then(tx      => tx.wait())
+            .then(receipt => receipt.events.find(event => event.event === 'ReturnValue'))
+            .then(event   => event.args.result.toNumber())
+        ))).to.have.members([ 17, 42 ]);
 
         expect(await this.instance.remaining()).to.be.equal(0);
 
@@ -67,15 +63,11 @@ describe('Random', function () {
 
         expect(await this.instance.remaining()).to.be.equal(values.length);
 
-
-        expect(await Promise.all(values
-            .map(_ => this.instance.draw())
-            .map(txPromise => txPromise
-                .then(tx      => tx.wait())
-                .then(receipt => receipt.events.find(event => event.event === 'ReturnValue'))
-                .then(event   => event.args.result.toNumber())
-            )
-        )).to.have.members(values);
+        await Promise.all(values.map(_ => this.instance.draw()
+            .then(tx      => tx.wait())
+            .then(receipt => receipt.events.find(event => event.event === 'ReturnValue'))
+            .then(event   => event.args.result.toNumber())
+        )).then(results => expect(results).to.have.members(values));
 
         expect(await this.instance.remaining()).to.be.equal(0);
 

@@ -44,18 +44,18 @@ library Balances {
         return self._owner[tokenid];
     }
 
-    function mint(NonFungible storage self, address account, uint256 tokenid) internal {
+    function mint(NonFungible storage self, address to, uint256 tokenid) internal {
         require(ownerOf(self, tokenid) == address(0), "token already exists");
-        self._owner[tokenid] = account;
+        self._owner[tokenid] = to;
     }
 
-    function burn(NonFungible storage self, uint256 tokenid) internal {
-        require(ownerOf(self, tokenid) != address(0), "token doesn't exist");
+    function burn(NonFungible storage self, address from, uint256 tokenid) internal {
+        require(ownerOf(self, tokenid) == from, "token doesn't exist");
         self._owner[tokenid] = address(0);
     }
 
-    function transfer(NonFungible storage self, uint256 tokenid, address to) internal {
-        require(ownerOf(self, tokenid) != address(0), "token doesn't exist");
+    function transfer(NonFungible storage self, address from, address to, uint256 tokenid) internal {
+        require(ownerOf(self, tokenid) == from, "token doesn't exist");
         self._owner[tokenid] = to;
     }
 
@@ -63,14 +63,6 @@ library Balances {
         NonFungible                               _base;
         EnumerableSet.UintSet                     _allTokens;
         mapping(address => EnumerableSet.UintSet) _userTokens;
-    }
-
-    function totalSupply(NonFungibleEnumerable storage self) internal view returns (uint256) {
-        return self._allTokens.length();
-    }
-
-    function at(NonFungibleEnumerable storage self, uint256 idx) internal view returns (uint256) {
-        return self._allTokens.at(idx);
     }
 
     function balanceOf(NonFungibleEnumerable storage self, address account) internal view returns (uint256) {
@@ -81,26 +73,32 @@ library Balances {
         return self._userTokens[account].at(idx);
     }
 
+    function totalSupply(NonFungibleEnumerable storage self) internal view returns (uint256) {
+        return self._allTokens.length();
+    }
+
+    function at(NonFungibleEnumerable storage self, uint256 idx) internal view returns (uint256) {
+        return self._allTokens.at(idx);
+    }
+
     function ownerOf(NonFungibleEnumerable storage self, uint256 tokenid) internal view returns (address) {
         return ownerOf(self._base, tokenid);
     }
 
-    function mint(NonFungibleEnumerable storage self, address account, uint256 tokenid) internal {
-        mint(self._base, account, tokenid);
+    function mint(NonFungibleEnumerable storage self, address to, uint256 tokenid) internal {
+        mint(self._base, to, tokenid);
         self._allTokens.add(tokenid);
-        self._userTokens[account].add(tokenid);
+        self._userTokens[to].add(tokenid);
     }
 
-    function burn(NonFungibleEnumerable storage self, uint256 tokenid) internal {
-        address account = Balances.ownerOf(self._base, tokenid);
-        burn(self._base, tokenid);
-        self._allTokens.add(tokenid);
-        self._userTokens[account].add(tokenid);
+    function burn(NonFungibleEnumerable storage self, address from, uint256 tokenid) internal {
+        burn(self._base, from, tokenid);
+        self._allTokens.remove(tokenid);
+        self._userTokens[from].remove(tokenid);
     }
 
-    function transfer(NonFungibleEnumerable storage self, uint256 tokenid, address to) internal {
-        address from = ownerOf(self, tokenid);
-        transfer(self._base, tokenid, to);
+    function transfer(NonFungibleEnumerable storage self, address from, address to, uint256 tokenid) internal {
+        transfer(self._base, from, to, tokenid);
         self._userTokens[from].remove(tokenid);
         self._userTokens[to].add(tokenid);
     }
