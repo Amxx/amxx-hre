@@ -37,7 +37,7 @@ library Random {
     }
 
     function put(Manifest storage self, uint256 i) internal {
-        self._data.push(i);
+        self._data.push(i + 1);
     }
 
     function remaining(Manifest storage self) internal view returns (uint256) {
