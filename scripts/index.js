@@ -38,3 +38,11 @@ function deployUpgradeable(name, kind, args = [], opts = {}) {
 function performUpgrade(proxy, name, opts = {}) {
     return getFactory(name, opts).then(factory => upgrades.upgradeProxy(proxy.address, factory, {}));
 }
+
+module.exports = {
+    getFactory,
+    attach,
+    deploy,
+    deployUpgradeable,
+    performUpgrade,
+};
