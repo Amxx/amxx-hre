@@ -1,140 +1,70 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/math/SafeCast.sol";
-
 library Distributions {
-    struct Balances {
-        mapping(address => uint256) _balances;
-        uint256 _totalSupply;
+    struct Uint256 {
+        mapping(address => uint256) _values;
+        uint256 _total;
     }
 
-    function balanceOf(Balances storage self, address account) internal view returns (uint256) {
-        return self._balances[account];
+    function valueOf(Uint256 storage self, address account) internal view returns (uint256) {
+        return self._values[account];
     }
 
-    function totalSupply(Balances storage self) internal view returns (uint256) {
-        return self._totalSupply;
+    function total(Uint256 storage self) internal view returns (uint256) {
+        return self._total;
     }
 
-    function mint(Balances storage self, address account, uint256 amount) internal {
-        require(account != address(0), "mint to the zero address");
-        self._balances[account] += amount;
-        self._totalSupply += amount;
+    function set(Uint256 storage self, address account, uint256 amount) internal {
+        self._total = self._total - self._values[account] + amount;
+        self._values[account] = amount;
     }
 
-    function burn(Balances storage self, address account, uint256 amount) internal {
-        require(account != address(0), "burn from the zero address");
-        self._balances[account] -= amount;
-        self._totalSupply -= amount;
+    function incr(Uint256 storage self, address account, uint256 amount) internal {
+        self._total += amount;
+        self._values[account] += amount;
     }
 
-    function transfer(Balances storage self, address from, address to, uint256 amount) internal {
-        require(from != address(0), "transfer from the zero address");
-        require(to != address(0), "transfer to the zero address");
-        self._balances[from] -= amount;
-        self._balances[to] += amount;
+    function decr(Uint256 storage self, address account, uint256 amount) internal {
+        self._total -= amount;
+        self._values[account] -= amount;
     }
 
-
-    struct SignedBalances {
-        mapping(address => int256) _balances;
-        int256 _totalSupply;
+    function mv(Uint256 storage self, address from, address to, uint256 amount) internal {
+        self._values[from] -= amount;
+        self._values[to] += amount;
     }
 
-    function balanceOf(SignedBalances storage self, address account) internal view returns (int256) {
-        return self._balances[account];
+    struct Int256 {
+        mapping(address => int256) _values;
+        int256 _total;
     }
 
-    function totalSupply(SignedBalances storage self) internal view returns (int256) {
-        return self._totalSupply;
+    function valueOf(Int256 storage self, address account) internal view returns (int256) {
+        return self._values[account];
     }
 
-    function mint(SignedBalances storage self, address account, int256 amount) internal {
-        require(account != address(0), "mint to the zero address");
-        self._balances[account] += amount;
-        self._totalSupply += amount;
+    function total(Int256 storage self) internal view returns (int256) {
+        return self._total;
     }
 
-    function burn(SignedBalances storage self, address account, int256 amount) internal {
-        require(account != address(0), "burn from the zero address");
-        self._balances[account] -= amount;
-        self._totalSupply -= amount;
+    function set(Int256 storage self, address account, int256 amount) internal {
+        self._total += amount - self._values[account];
+        self._values[account] = amount;
     }
 
-    function transfer(SignedBalances storage self, address from, address to, int256 amount) internal {
-        require(from != address(0), "transfer from the zero address");
-        require(to != address(0), "transfer to the zero address");
-        self._balances[from] -= amount;
-        self._balances[to] += amount;
+    function incr(Int256 storage self, address account, int256 amount) internal {
+        self._total += amount;
+        self._values[account] += amount;
     }
 
-
-    struct Splitter {
-        Balances _shares;
-        SignedBalances _released;
-        uint256  _bounty;
+    function decr(Int256 storage self, address account, int256 amount) internal {
+        self._total -= amount;
+        self._values[account] -= amount;
     }
 
-    function balanceOf(Splitter storage self, address account) internal view returns (uint256) {
-        return balanceOf(self._shares, account);
-    }
-
-    function totalSupply(Splitter storage self) internal view returns (uint256) {
-        return totalSupply(self._shares);
-    }
-
-    function mint(Splitter storage self, address account, uint256 amount) internal {
-        if (totalSupply(self._shares) > 0) {
-            int256 virtualRelease = SafeCast.toInt256(_virtualRelease(self, amount));
-            mint(self._released, account, virtualRelease);
-        }
-
-        mint(self._shares, account, amount);
-    }
-
-    function burn(Splitter storage self, address account, uint256 amount) internal {
-        int256 virtualRelease = SafeCast.toInt256(_virtualRelease(self, amount));
-        burn(self._released, account, virtualRelease);
-
-        burn(self._shares, account, amount);
-    }
-
-    function transfer(Splitter storage self, address from, address to, uint256 amount) internal {
-        int256 virtualRelease = SafeCast.toInt256(_virtualRelease(self, amount));
-        burn(self._released, from, virtualRelease);
-        mint(self._released, to, virtualRelease);
-
-        transfer(self._shares, from, to, amount);
-    }
-
-    function toRelease(Splitter storage self, address account) internal view returns (uint256) {
-        uint256 shares = balanceOf(self._shares, account);
-        return shares == 0
-            ? 0
-            : SafeCast.toUint256(int256(shares)
-            * (SafeCast.toInt256(self._bounty)
-            + totalSupply(self._released))
-            / SafeCast.toInt256(totalSupply(self._shares))
-            - balanceOf(self._released, account));
-    }
-
-    function release(Splitter storage self, address account) internal returns (uint256) {
-        uint256 pending = toRelease(self, account);
-        self._bounty -= pending;
-        mint(self._released, account, SafeCast.toInt256(pending));
-        return pending;
-    }
-
-    function reward(Splitter storage self, uint256 amount) internal {
-        self._bounty += amount;
-    }
-
-    function _historical(Splitter storage self) private view returns (uint256) {
-        return SafeCast.toUint256(SafeCast.toInt256(self._bounty) + totalSupply(self._released));
-    }
-
-    function _virtualRelease(Splitter storage self, uint256 amount) private view returns (uint256) {
-        return amount * _historical(self) / totalSupply(self._shares);
+    function mv(Int256 storage self, address from, address to, int256 amount) internal {
+        self._values[from] -= amount;
+        self._values[to] += amount;
     }
 }

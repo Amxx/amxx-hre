@@ -6,7 +6,7 @@ Array.range = function(start, stop = undefined, step = 1) {
 }
 
 Array.prototype.unique = function(op = x => x) {
-return this.filter((obj, i) => this.findIndex(entry => op(obj) === op(entry)) === i);
+    return this.filter((obj, i) => this.findIndex(entry => op(obj) === op(entry)) === i);
 }
 
 Array.prototype.chunk = function(size) {

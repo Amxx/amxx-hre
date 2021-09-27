@@ -15,16 +15,16 @@ library AssetManager {
         bytes _data;
     }
 
-    function getBalance(Asset memory asset, address account) internal view returns (uint256) {
-        return asset._balanceHandler(asset, account);
+    function getBalance(Asset memory self, address account) internal view returns (uint256) {
+        return self._balanceHandler(self, account);
     }
 
     function sendValue(
-        Asset memory asset,
+        Asset memory self,
         address account,
         uint256 value
     ) internal {
-        asset._transferHandler(asset, account, value);
+        self._transferHandler(self, account, value);
     }
 
     /// ETH
@@ -35,14 +35,14 @@ library AssetManager {
     }
 
     function _ethBalance(
-        Asset memory, /*asset*/
+        Asset memory, /*self*/
         address account
     ) private view returns (uint256) {
         return account.balance;
     }
 
     function _ethTransfer(
-        Asset memory, /*asset*/
+        Asset memory, /*self*/
         address account,
         uint256 value
     ) private {
@@ -57,16 +57,16 @@ library AssetManager {
         result._data = abi.encode(token);
     }
 
-    function _erc20Balance(Asset memory asset, address account) private view returns (uint256) {
-        return abi.decode(asset._data, (IERC20)).balanceOf(account);
+    function _erc20Balance(Asset memory self, address account) private view returns (uint256) {
+        return abi.decode(self._data, (IERC20)).balanceOf(account);
     }
 
     function _erc20Transfer(
-        Asset memory asset,
+        Asset memory self,
         address account,
         uint256 value
     ) private {
-        SafeERC20.safeTransfer(abi.decode(asset._data, (IERC20)), account, value);
+        SafeERC20.safeTransfer(abi.decode(self._data, (IERC20)), account, value);
     }
 
     /// ERC721
@@ -77,18 +77,18 @@ library AssetManager {
         result._data = abi.encode(registry, tokenId);
     }
 
-    function _erc721Balance(Asset memory asset, address account) private view returns (uint256) {
-        (IERC721 registry, uint256 tokenId) = abi.decode(asset._data, (IERC721, uint256));
+    function _erc721Balance(Asset memory self, address account) private view returns (uint256) {
+        (IERC721 registry, uint256 tokenId) = abi.decode(self._data, (IERC721, uint256));
         return registry.ownerOf(tokenId) == account ? 1 : 0;
     }
 
     function _erc721Transfer(
-        Asset memory asset,
+        Asset memory self,
         address account,
         uint256 value
     ) private {
         require(value == 1, "Asset is non-fungible");
-        (IERC721 registry, uint256 tokenId) = abi.decode(asset._data, (IERC721, uint256));
+        (IERC721 registry, uint256 tokenId) = abi.decode(self._data, (IERC721, uint256));
         registry.transferFrom(registry.ownerOf(tokenId), account, tokenId);
     }
 
@@ -100,17 +100,17 @@ library AssetManager {
         result._data = abi.encode(registry, tokenId);
     }
 
-    function _erc1155Balance(Asset memory asset, address account) private view returns (uint256) {
-        (IERC1155 registry, uint256 tokenId) = abi.decode(asset._data, (IERC1155, uint256));
+    function _erc1155Balance(Asset memory self, address account) private view returns (uint256) {
+        (IERC1155 registry, uint256 tokenId) = abi.decode(self._data, (IERC1155, uint256));
         return registry.balanceOf(account, tokenId);
     }
 
     function _erc1155Transfer(
-        Asset memory asset,
+        Asset memory self,
         address account,
         uint256 value
     ) private {
-        (IERC1155 registry, uint256 tokenId) = abi.decode(asset._data, (IERC1155, uint256));
+        (IERC1155 registry, uint256 tokenId) = abi.decode(self._data, (IERC1155, uint256));
         registry.safeTransferFrom(address(this), account, tokenId, value, new bytes(0));
     }
 }
