@@ -11,8 +11,8 @@ library Voting {
 
     struct Votes {
         mapping(address => address)             _delegation;
-        Checkpoints.History                     _totalCheckpoints;
         mapping(address => Checkpoints.History) _userCheckpoints;
+        Checkpoints.History                     _totalCheckpoints;
     }
 
     function getVotes(Votes storage self, address account) internal view returns (uint256) {
