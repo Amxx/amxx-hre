@@ -27,12 +27,14 @@ library Checkpoints {
         return pos == 0 ? 0 : at(self, pos - 1).value;
     }
 
-    function past(History storage self, uint256 timestamp) internal view returns (uint256) {
+    function past(History storage self, uint256 index) internal view returns (uint256) {
+        require(index < block.number, "block not yet mined");
+
         uint256 high = length(self);
         uint256 low = 0;
         while (low < high) {
             uint256 mid = Math.average(low, high);
-            if (at(self, mid).index > timestamp) {
+            if (at(self, mid).index > index) {
                 high = mid;
             } else {
                 low = mid + 1;

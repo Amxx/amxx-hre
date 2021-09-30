@@ -31,30 +31,36 @@ library Voting {
         return self._totalCheckpoints.past(timestamp);
     }
 
-    function delegation(Votes storage self, address account) internal view returns (address) {
+    function delegates(Votes storage self, address account) internal view returns (address) {
         return self._delegation[account];
     }
 
     function delegate(Votes storage self, address account, address newDelegation, uint256 balance) internal {
-        address oldDelegation = delegation(self, account);
+        address oldDelegation = delegates(self, account);
         self._delegation[account] = newDelegation;
         moveVotingPower(self, oldDelegation, newDelegation, balance);
     }
 
-    function transfer(Votes storage self, address src, address dst, uint256 amount) internal {
-        moveVotingPower(self, delegation(self, src), delegation(self, dst), amount);
+    function mint(Votes storage self, address to, uint256 amount) internal {
+        self._totalCheckpoints.push(_add, amount);
+        moveVotingPower(self, address(0), delegates(self, to), amount);
+    }
+
+    function burn(Votes storage self, address from, uint256 amount) internal {
+        self._totalCheckpoints.push(_subtract, amount);
+        moveVotingPower(self, delegates(self, from), address(0), amount);
+    }
+
+    function transfer(Votes storage self, address from, address to, uint256 amount) internal {
+        moveVotingPower(self, delegates(self, from), delegates(self, to), amount);
     }
 
    function moveVotingPower(Votes storage self, address src, address dst, uint256 amount) private {
         if (src != dst && amount > 0) {
-            if (src == address(0)) {
-                self._totalCheckpoints.push(_add, amount);
-            } else {
+            if (src != address(0)) {
                 self._userCheckpoints[src].push(_subtract, amount);
             }
-            if (dst == address(0)) {
-                self._totalCheckpoints.push(_subtract, amount);
-            } else {
+            if (dst != address(0)) {
                 self._userCheckpoints[dst].push(_add, amount);
             }
         }
@@ -97,22 +103,22 @@ library Voting {
         return getTotalVotesAt(self._votes, timestamp);
     }
 
-    function delegation(FungibleVoting storage self, address account) internal view returns (address) {
-        return delegation(self._votes, account);
+    function delegates(FungibleVoting storage self, address account) internal view returns (address) {
+        return delegates(self._votes, account);
     }
 
     function delegate(FungibleVoting storage self, address account, address newDelegation) internal {
         delegate(self._votes, account, newDelegation, balanceOf(self, account));
     }
 
-    function mint(FungibleVoting storage self, address account, uint256 amount) internal {
-        self._balances.mint(account, amount);
-        transfer(self._votes, address(0), account, amount);
+    function mint(FungibleVoting storage self, address to, uint256 amount) internal {
+        self._balances.mint(to, amount);
+        mint(self._votes, to, amount);
     }
 
-    function burn(FungibleVoting storage self, address account, uint256 amount) internal {
-        self._balances.burn(account, amount);
-        transfer(self._votes, account, address(0), amount);
+    function burn(FungibleVoting storage self, address from, uint256 amount) internal {
+        self._balances.burn(from, amount);
+        burn(self._votes, from, amount);
     }
 
     function transfer(FungibleVoting storage self, address from, address to, uint256 amount) internal {
@@ -149,22 +155,22 @@ library Voting {
         return getTotalVotesAt(self._votes, timestamp);
     }
 
-    function delegation(NonFungibleVoting storage self, address account) internal view returns (address) {
-        return delegation(self._votes, account);
+    function delegates(NonFungibleVoting storage self, address account) internal view returns (address) {
+        return delegates(self._votes, account);
     }
 
     function delegate(NonFungibleVoting storage self, address account, address newDelegation) internal {
         delegate(self._votes, account, newDelegation, balanceOf(self, account));
     }
 
-    function mint(NonFungibleVoting storage self, address account, uint256 tokenid) internal {
-        self._balances.mint(account, tokenid);
-        transfer(self._votes, address(0), account, 1);
+    function mint(NonFungibleVoting storage self, address to, uint256 tokenid) internal {
+        self._balances.mint(to, tokenid);
+        mint(self._votes, to, 1);
     }
 
     function burn(NonFungibleVoting storage self, address from, uint256 tokenid) internal {
         self._balances.burn(from, tokenid);
-        transfer(self._votes, from, address(0), 1);
+        burn(self._votes, from, 1);
     }
 
     function transfer(NonFungibleVoting storage self, address from, address to, uint256 tokenid) internal {
