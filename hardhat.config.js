@@ -18,7 +18,7 @@ const argv = require('yargs/yargs')()
 require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
-
+require('hardhat-deploy');
 
 argv.coverage  && require('solidity-coverage');
 argv.etherscan && require('@nomiclabs/hardhat-etherscan');
@@ -35,7 +35,7 @@ module.exports = {
   solidity: {
     compilers: [
       // { version: argv.compiler, settings },
-      { version: '0.8.7',       settings },
+      { version: '0.8.9',       settings },
       { version: '0.7.6',       settings },
       { version: '0.6.12',      settings },
       { version: '0.5.16',      settings },
