@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../examples/ERC1155Votes.sol";
+import "../extensions/ERC1155Votes.sol";
 
 contract ERC1155VotesMock is ERC1155Votes {
     constructor(string memory name, string memory uri) ERC1155(uri) EIP712(name, "1") {}
