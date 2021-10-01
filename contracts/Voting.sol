@@ -38,30 +38,80 @@ library Voting {
     function delegate(Votes storage self, address account, address newDelegation, uint256 balance) internal {
         address oldDelegation = delegates(self, account);
         self._delegation[account] = newDelegation;
-        moveVotingPower(self, oldDelegation, newDelegation, balance);
+        moveVotingPower(self, oldDelegation, newDelegation, balance, _dummy);
+    }
+
+    function delegate(
+        Votes storage self,
+        address account,
+        address newDelegation,
+        uint256 balance,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) internal {
+        address oldDelegation = delegates(self, account);
+        self._delegation[account] = newDelegation;
+        moveVotingPower(self, oldDelegation, newDelegation, balance, hookDelegateVotesChanged);
     }
 
     function mint(Votes storage self, address to, uint256 amount) internal {
         self._totalCheckpoints.push(_add, amount);
-        moveVotingPower(self, address(0), delegates(self, to), amount);
+        moveVotingPower(self, address(0), delegates(self, to), amount, _dummy);
+    }
+
+    function mint(
+        Votes storage self,
+        address to,
+        uint256 amount,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) internal {
+        self._totalCheckpoints.push(_add, amount);
+        moveVotingPower(self, address(0), delegates(self, to), amount, hookDelegateVotesChanged);
     }
 
     function burn(Votes storage self, address from, uint256 amount) internal {
         self._totalCheckpoints.push(_subtract, amount);
-        moveVotingPower(self, delegates(self, from), address(0), amount);
+        moveVotingPower(self, delegates(self, from), address(0), amount, _dummy);
+    }
+
+    function burn(
+        Votes storage self,
+        address from,
+        uint256 amount,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) internal {
+        self._totalCheckpoints.push(_subtract, amount);
+        moveVotingPower(self, delegates(self, from), address(0), amount, hookDelegateVotesChanged);
     }
 
     function transfer(Votes storage self, address from, address to, uint256 amount) internal {
-        moveVotingPower(self, delegates(self, from), delegates(self, to), amount);
+        moveVotingPower(self, delegates(self, from), delegates(self, to), amount, _dummy);
     }
 
-   function moveVotingPower(Votes storage self, address src, address dst, uint256 amount) private {
+    function transfer(
+        Votes storage self,
+        address from,
+        address to,
+        uint256 amount,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) internal {
+        moveVotingPower(self, delegates(self, from), delegates(self, to), amount, hookDelegateVotesChanged);
+    }
+
+   function moveVotingPower(
+        Votes storage self,
+        address src,
+        address dst,
+        uint256 amount,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) private {
         if (src != dst && amount > 0) {
             if (src != address(0)) {
-                self._userCheckpoints[src].push(_subtract, amount);
+                (uint256 oldValue, uint256 newValue) = self._userCheckpoints[src].push(_subtract, amount);
+                hookDelegateVotesChanged(src, oldValue, newValue);
             }
             if (dst != address(0)) {
-                self._userCheckpoints[dst].push(_add, amount);
+                (uint256 oldValue, uint256 newValue) = self._userCheckpoints[dst].push(_add, amount);
+                hookDelegateVotesChanged(dst, oldValue, newValue);
             }
         }
     }
@@ -73,6 +123,8 @@ library Voting {
     function _subtract(uint256 a, uint256 b) private pure returns (uint256) {
         return a - b;
     }
+
+    function _dummy(address, uint256, uint256) private pure {}
 
     struct FungibleVoting {
         Balances.Fungible _balances;
@@ -111,9 +163,28 @@ library Voting {
         delegate(self._votes, account, newDelegation, balanceOf(self, account));
     }
 
+    function delegate(
+        FungibleVoting storage self,
+        address account,
+        address newDelegation,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) internal {
+        delegate(self._votes, account, newDelegation, balanceOf(self, account), hookDelegateVotesChanged);
+    }
+
     function mint(FungibleVoting storage self, address to, uint256 amount) internal {
         self._balances.mint(to, amount);
         mint(self._votes, to, amount);
+    }
+
+    function mint(
+        FungibleVoting storage self,
+        address to,
+        uint256 amount,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) internal {
+        self._balances.mint(to, amount);
+        mint(self._votes, to, amount, hookDelegateVotesChanged);
     }
 
     function burn(FungibleVoting storage self, address from, uint256 amount) internal {
@@ -121,9 +192,30 @@ library Voting {
         burn(self._votes, from, amount);
     }
 
+    function burn(
+        FungibleVoting storage self,
+        address from,
+        uint256 amount,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) internal {
+        self._balances.burn(from, amount);
+        burn(self._votes, from, amount, hookDelegateVotesChanged);
+    }
+
     function transfer(FungibleVoting storage self, address from, address to, uint256 amount) internal {
         self._balances.transfer(from, to, amount);
         transfer(self._votes, from, to, amount);
+    }
+
+    function transfer(
+        FungibleVoting storage self,
+        address from,
+        address to,
+        uint256 amount,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) internal {
+        self._balances.transfer(from, to, amount);
+        transfer(self._votes, from, to, amount, hookDelegateVotesChanged);
     }
 
     struct NonFungibleVoting {
@@ -176,5 +268,45 @@ library Voting {
     function transfer(NonFungibleVoting storage self, address from, address to, uint256 tokenid) internal {
         self._balances.transfer(from, to, tokenid);
         transfer(self._votes, from, to, 1);
+    }
+
+    function delegate(
+        NonFungibleVoting storage self,
+        address account,
+        address newDelegation,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) internal {
+        delegate(self._votes, account, newDelegation, balanceOf(self, account), hookDelegateVotesChanged);
+    }
+
+    function mint(
+        NonFungibleVoting storage self,
+        address to,
+        uint256 tokenid,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) internal {
+        self._balances.mint(to, tokenid);
+        mint(self._votes, to, 1, hookDelegateVotesChanged);
+    }
+
+    function burn(
+        NonFungibleVoting storage self,
+        address from,
+        uint256 tokenid,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) internal {
+        self._balances.burn(from, tokenid);
+        burn(self._votes, from, 1, hookDelegateVotesChanged);
+    }
+
+    function transfer(
+        NonFungibleVoting storage self,
+        address from,
+        address to,
+        uint256 tokenid,
+        function(address, uint256, uint256) hookDelegateVotesChanged
+    ) internal {
+        self._balances.transfer(from, to, tokenid);
+        transfer(self._votes, from, to, 1, hookDelegateVotesChanged);
     }
 }

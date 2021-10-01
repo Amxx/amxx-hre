@@ -1,4 +1,4 @@
-const { ethers } = require('hardhat');
+const { ethers   } = require('hardhat');
 const chai         = require('chai');
 const { solidity } = require('ethereum-waffle');
 const { deploy   } = require('../scripts');

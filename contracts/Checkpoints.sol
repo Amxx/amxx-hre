@@ -43,20 +43,25 @@ library Checkpoints {
         return high == 0 ? 0 : at(self, high - 1).value;
     }
 
-    function push(History storage self, uint256 value) internal {
+    function push(
+        History storage self,
+        uint256 value
+    ) internal returns (uint256, uint256) {
         uint256 pos = length(self);
+        uint256 old   = latest(self);
         if (pos > 0 && self._checkpoints[pos - 1].index == block.number) {
             self._checkpoints[pos - 1].value = SafeCast.toUint224(value);
         } else {
             self._checkpoints.push(Checkpoint({ index: SafeCast.toUint32(block.number), value: SafeCast.toUint224(value) }));
         }
+        return (old, value);
     }
 
     function push(
         History storage self,
         function(uint256, uint256) view returns (uint256) op,
         uint256 delta
-    ) internal {
+    ) internal returns (uint256, uint256) {
         uint256 pos   = length(self);
         uint256 old   = latest(self);
         uint256 value = op(old, delta);
@@ -65,5 +70,6 @@ library Checkpoints {
         } else {
             self._checkpoints.push(Checkpoint({ index: SafeCast.toUint32(block.number), value: SafeCast.toUint224(value) }));
         }
+        return (old, value);
     }
 }

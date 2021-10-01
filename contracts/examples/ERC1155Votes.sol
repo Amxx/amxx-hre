@@ -14,6 +14,9 @@ abstract contract ERC1155Votes is ERC1155, WithNonce {
     // ERC1155 doesn't keep track of the summed balance for each account, so we use a voting system that includes that
     Voting.FungibleVoting private _votes;
 
+    event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
+    event DelegateVotesChanged(address indexed delegate, uint256 previousBalance, uint256 newBalance);
+
     function delegates(address account) public view virtual returns (address) {
         return _votes.delegates(account);
     }
@@ -54,7 +57,8 @@ abstract contract ERC1155Votes is ERC1155, WithNonce {
     }
 
     function _delegate(address delegator, address delegatee) public virtual {
-        _votes.delegate(delegator, delegatee);
+        emit DelegateChanged(delegator, delegates(delegator), delegatee);
+        _votes.delegate(delegator, delegatee, _hookDelegateVotesChanged);
     }
 
     function _mint(
@@ -64,7 +68,7 @@ abstract contract ERC1155Votes is ERC1155, WithNonce {
         bytes memory data
     ) internal virtual override {
         super._mint(to, id, amount, data);
-        _votes.mint(to, amount);
+        _votes.mint(to, amount, _hookDelegateVotesChanged);
     }
 
     function _mintBatch(
@@ -74,7 +78,7 @@ abstract contract ERC1155Votes is ERC1155, WithNonce {
         bytes memory data
     ) internal virtual override {
         super._mintBatch(to, ids, amounts, data);
-        _votes.mint(to, _sum(amounts));
+        _votes.mint(to, _sum(amounts), _hookDelegateVotesChanged);
     }
 
     function _burn(
@@ -83,7 +87,7 @@ abstract contract ERC1155Votes is ERC1155, WithNonce {
         uint256 amount
     ) internal virtual override {
         super._burn(from, id, amount);
-        _votes.burn(from, amount);
+        _votes.burn(from, amount, _hookDelegateVotesChanged);
     }
 
     function _burnBatch(
@@ -92,15 +96,7 @@ abstract contract ERC1155Votes is ERC1155, WithNonce {
         uint256[] memory amounts
     ) internal virtual override {
         super._burnBatch(from, ids, amounts);
-        _votes.burn(from, _sum(amounts));
-    }
-
-    function _sum(uint256[] memory amounts) private pure returns (uint256) {
-        uint256 result = 0;
-        for (uint256 i = 0; i < amounts.length; ++i) {
-            result += amounts[i];
-        }
-        return result;
+        _votes.burn(from, _sum(amounts), _hookDelegateVotesChanged);
     }
 
     function _safeTransferFrom(
@@ -111,7 +107,7 @@ abstract contract ERC1155Votes is ERC1155, WithNonce {
         bytes memory data
     ) internal virtual override {
         super._safeTransferFrom(from, to, id, amount, data);
-        _votes.transfer(from, to, amount);
+        _votes.transfer(from, to, amount, _hookDelegateVotesChanged);
     }
 
     function _safeBatchTransferFrom(
@@ -122,6 +118,18 @@ abstract contract ERC1155Votes is ERC1155, WithNonce {
         bytes memory data
     ) internal virtual override {
         super._safeBatchTransferFrom(from, to, ids, amounts, data);
-        _votes.transfer(from, to, _sum(amounts));
+        _votes.transfer(from, to, _sum(amounts), _hookDelegateVotesChanged);
+    }
+
+    function _hookDelegateVotesChanged(address account, uint256 previousBalance, uint256 newBalance) private {
+        emit DelegateVotesChanged(account, previousBalance, newBalance);
+    }
+
+    function _sum(uint256[] memory amounts) private pure returns (uint256) {
+        uint256 result = 0;
+        for (uint256 i = 0; i < amounts.length; ++i) {
+            result += amounts[i];
+        }
+        return result;
     }
 }
