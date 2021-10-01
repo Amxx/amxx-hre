@@ -175,7 +175,7 @@ describe('ERC20Votes', function () {
     });
   });
 
-  describe.only('transfers', function () {
+  describe('transfers', function () {
     beforeEach(async function () {
       await this.token.mint(this.accounts.holder.address, supply);
     });
