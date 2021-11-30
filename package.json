@@ -1,6 +1,6 @@
 {
   "name": "@amxx/hre",
-  "version": "0.0.4",
+  "version": "0.0.4-1",
   "description": "A minimal package for hardhat project",
   "author": "Hadrien Croubois (@Amxx)",
   "license": "MIT",
