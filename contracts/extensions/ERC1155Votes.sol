@@ -97,7 +97,7 @@ abstract contract ERC1155Votes is ERC1155, WithNonce, WithDelegate {
     }
 
     function _useNonce(address owner) internal virtual override(WithNonce, WithDelegate) returns (uint256 current) {
-        super._useNonce(owner);
+        return super._useNonce(owner);
     }
 
     function _sum(uint256[] memory amounts) private pure returns (uint256) {
