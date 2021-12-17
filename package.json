@@ -4,10 +4,12 @@
   "description": "A minimal package for hardhat project",
   "author": "Hadrien Croubois (@Amxx)",
   "license": "MIT",
+  "entrypoint": "./scripts/index.js",
   "files": [
     "contracts/*",
-    "!contracts/mock/*",
+    "!contracts/mocks/*",
     "scripts/**/*.js",
+    "!scripts/**/*.test.js",
     "hardhat.config.js"
   ],
   "scripts": {

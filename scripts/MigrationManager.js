@@ -12,7 +12,7 @@ class MigrationManager {
         this.config   = config;
 
         this.cacheAsPromise = provider.getNetwork().then(({ name, chainId }) => {
-            this.cache = new AsyncConf({ configName: `.cache-${chainId}` });
+            this.cache = new AsyncConf({ cwd: config.cwd ?? '.', configName: `.cache-${chainId}` });
             return this.cache;
         });
     }
@@ -25,23 +25,27 @@ class MigrationManager {
     }
 
     migrate(key, factory, args = [], opts = {}) {
+        if (!Array.isArray(args)) {
+            opts = args;
+            args = [];
+        }
         return this.ready()
-            // confirm deployment (clean cache if needed)
-            .then(() => opts.override
-                ? this.cache.delete(key) || this.cache.delete(`${key}-pending`) || true
-                : this.cache.get(key).then(value => !!value || confirm(`Deploy "${key}" with params:\n${JSON.stringify(args, null, 4)}\nConfirm`))
-            )
+            .then(() => opts.noCache && (
+                this.cache.delete(key) || this.cache.delete(`${key}-pending`)
+            ))
+            .then(() => opts.noConfirm || (
+                this.cache.get(key).then(value => !!value || confirm(`Deploy "${key}" with params:\n${JSON.stringify(args, null, 4)}\nConfirm`))
+            ))
             // fetchOrDeploy
             .then(deploy => deploy
-                ? this.resumeOrDeploy(key, () => opts.kind
-                    ? upgrades.deployProxy(factory, args, opts)
-                    : factory.deploy(...args)
-                )
-                : undefined
-            )
-            // attach to address
-            .then(address => address
-                ? factory.attach(address)
+                ? Promise.resolve(factory)
+                    .then(contract =>
+                        this.resumeOrDeploy(key, () => opts.kind
+                            ? upgrades.deployProxy(contract, args, opts)
+                            : contract.deploy(...args)
+                        )
+                        .then(address => contract.attach(address))
+                    )
                 : undefined
             );
     }
