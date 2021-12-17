@@ -48,7 +48,7 @@ library Checkpoints {
         uint256 value
     ) internal returns (uint256, uint256) {
         uint256 pos = length(self);
-        uint256 old   = latest(self);
+        uint256 old = latest(self);
         if (pos > 0 && self._checkpoints[pos - 1].index == block.number) {
             self._checkpoints[pos - 1].value = SafeCast.toUint224(value);
         } else {

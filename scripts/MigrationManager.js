@@ -26,24 +26,24 @@ class MigrationManager {
 
     migrate(key, factory, args = [], opts = {}) {
         return this.ready()
-        // confirm deployment (clean cache if needed)
-        .then(() => opts.override
-            ? this.cache.delete(key) || this.cache.delete(`${key}-pending`) || true
-            : this.cache.get(key).then(value => !!value || confirm(`Deploy "${key}" with params:\n${JSON.stringify(args, null, 4)}\nConfirm`))
-        )
-        // fetchOrDeploy
-        .then(deploy => deploy
-            ? this.resumeOrDeploy(key, () => opts.kind
-                ? upgrades.deployProxy(factory, args, opts)
-                : factory.deploy(...args)
+            // confirm deployment (clean cache if needed)
+            .then(() => opts.override
+                ? this.cache.delete(key) || this.cache.delete(`${key}-pending`) || true
+                : this.cache.get(key).then(value => !!value || confirm(`Deploy "${key}" with params:\n${JSON.stringify(args, null, 4)}\nConfirm`))
             )
-            : undefined
-        )
-        // attach to address
-        .then(address => address
-            ? factory.attach(address)
-            : undefined
-        );
+            // fetchOrDeploy
+            .then(deploy => deploy
+                ? this.resumeOrDeploy(key, () => opts.kind
+                    ? upgrades.deployProxy(factory, args, opts)
+                    : factory.deploy(...args)
+                )
+                : undefined
+            )
+            // attach to address
+            .then(address => address
+                ? factory.attach(address)
+                : undefined
+            );
     }
 
     async resumeOrDeploy(key, deploy) {
