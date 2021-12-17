@@ -1,41 +1,42 @@
 require('dotenv/config');
 
-const argv = require('yargs/yargs')()
+const argv = require('yargs/yargs')(process.argv.slice(2))
   .env('')
   .options({
-    coverage:      { type: 'boolean',                                          default: false         },
-    report:        { type: 'boolean',                                          default: false         },
-    slow:          { type: 'boolean',                                          default: false         },
-    // compiler:      { type: 'string',                                           default: '0.8.7'       },
-    hardfork:      { type: 'string',                                           default: 'london'      },
-    mode:          { type: 'string', choices: [ 'production', 'development' ], default: 'development' },
-    fork:          { type: 'string',                                                                  },
-    coinmarketcap: { type: 'string'                                                                   },
-    etherscan:     { type: 'string'                                                                   },
+    coverage:      { type: 'boolean',                                          default: false        },
+    report:        { type: 'boolean',                                          default: false        },
+    slow:          { type: 'boolean',                                          default: false        },
+    compiler:      { type: 'string',                                           default: '0.8.10'     },
+    chainId:       { type: 'number',                                           default: 1337         },
+    hardfork:      { type: 'string',                                           default: 'london'     },
+    mode:          { type: 'string', choices: [ 'production', 'development' ], default: 'production' },
+    runs:          { type: 'number',                                           default: 200          },
+    fork:          { type: 'string',                                                                 },
+    coinmarketcap: { type: 'string'                                                                  },
+    etherscan:     { type: 'string'                                                                  },
   })
   .argv;
 
 require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
-require('hardhat-deploy');
+require('solidity-coverage');
 
-argv.coverage  && require('solidity-coverage');
 argv.etherscan && require('@nomiclabs/hardhat-etherscan');
 argv.report    && require('hardhat-gas-reporter');
 
 const settings = {
   optimizer: {
     enabled: argv.mode === 'production' || argv.report,
-    runs: 999,
+    runs: argv.runs,
   },
 };
 
 module.exports = {
   solidity: {
     compilers: [
-      // { version: argv.compiler, settings },
-      { version: '0.8.9',       settings },
+      { version: argv.compiler, settings },
+      { version: '0.8.10',      settings },
       { version: '0.7.6',       settings },
       { version: '0.6.12',      settings },
       { version: '0.5.16',      settings },
@@ -43,6 +44,7 @@ module.exports = {
   },
   networks: {
     hardhat: {
+      chainId: argv.chainId,
       hardfork: argv.hardfork,
     },
   },
