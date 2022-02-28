@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-library Deque {
+library LinkedList {
     error OutOfBound();
 
     type Iterator is uint32; // not more than 128 so previous and next are in the same slot
@@ -12,7 +12,7 @@ library Deque {
         bytes32 data;
     }
 
-    struct Bytes32Deque {
+    struct Bytes32LinkedList {
         Node[] _data;
     }
 
@@ -20,59 +20,59 @@ library Deque {
         return Iterator.unwrap(it) == 0;
     }
 
-    function begin(Bytes32Deque storage deque) internal view returns (Iterator) {
+    function begin(Bytes32LinkedList storage deque) internal view returns (Iterator) {
         return deque._data.length == 0 ? Iterator.wrap(0) : deque._data[0].next;
     }
 
-    function end(Bytes32Deque storage deque) internal view returns (Iterator) {
+    function end(Bytes32LinkedList storage deque) internal view returns (Iterator) {
         return deque._data.length == 0 ? Iterator.wrap(0) : deque._data[0].previous;
     }
 
-    function next(Bytes32Deque storage deque, Iterator it) internal view returns (Iterator) {
+    function next(Bytes32LinkedList storage deque, Iterator it) internal view returns (Iterator) {
         if (isNull(it)) revert OutOfBound();
         return deque._data[Iterator.unwrap(it)].next;
     }
 
-    function previous(Bytes32Deque storage deque, Iterator it) internal view returns (Iterator) {
+    function previous(Bytes32LinkedList storage deque, Iterator it) internal view returns (Iterator) {
         if (isNull(it)) revert OutOfBound();
         return deque._data[Iterator.unwrap(it)].previous;
     }
 
-    function get(Bytes32Deque storage deque, Iterator it) internal view returns (bytes32) {
+    function get(Bytes32LinkedList storage deque, Iterator it) internal view returns (bytes32) {
         if (isNull(it)) revert OutOfBound();
         return deque._data[Iterator.unwrap(it)].data;
     }
 
-    function set(Bytes32Deque storage deque, Iterator it, bytes32 data) internal {
+    function set(Bytes32LinkedList storage deque, Iterator it, bytes32 data) internal {
         if (isNull(it)) revert OutOfBound();
         deque._data[Iterator.unwrap(it)].data = data;
     }
 
-    function front(Bytes32Deque storage deque) internal view returns (bytes32) {
+    function front(Bytes32LinkedList storage deque) internal view returns (bytes32) {
         return get(deque, begin(deque));
     }
 
-    function back(Bytes32Deque storage deque) internal view returns (bytes32) {
+    function back(Bytes32LinkedList storage deque) internal view returns (bytes32) {
         return get(deque, end(deque));
     }
 
-    function pushFront(Bytes32Deque storage deque, bytes32 data) internal {
+    function pushFront(Bytes32LinkedList storage deque, bytes32 data) internal {
         insertBefore(deque, begin(deque), data);
     }
 
-    function pushBack(Bytes32Deque storage deque, bytes32 data) internal {
+    function pushBack(Bytes32LinkedList storage deque, bytes32 data) internal {
         insertAfter(deque, end(deque), data);
     }
 
-    function popBack(Bytes32Deque storage deque) internal returns (bytes32) {
+    function popBack(Bytes32LinkedList storage deque) internal returns (bytes32) {
         return remove(deque, end(deque));
     }
 
-    function popFront(Bytes32Deque storage deque) internal returns (bytes32) {
+    function popFront(Bytes32LinkedList storage deque) internal returns (bytes32) {
         return remove(deque, begin(deque));
     }
 
-    function initialize(Bytes32Deque storage deque, bool reset) internal {
+    function initialize(Bytes32LinkedList storage deque, bool reset) internal {
         if (deque._data.length == 0) {
             deque._data.push();
         } else if (reset) {
@@ -87,7 +87,7 @@ library Deque {
         }
     }
 
-    function insertBefore(Bytes32Deque storage deque, Iterator it, bytes32 data) internal {
+    function insertBefore(Bytes32LinkedList storage deque, Iterator it, bytes32 data) internal {
         initialize(deque, false);
 
         Iterator other = deque._data[Iterator.unwrap(it)].previous;
@@ -101,7 +101,7 @@ library Deque {
         deque._data[Iterator.unwrap(it)].previous = deque._data[Iterator.unwrap(other)].next = Iterator.wrap(uint32(deque._data.length - 1));
     }
 
-    function insertAfter(Bytes32Deque storage deque, Iterator it, bytes32 data) internal {
+    function insertAfter(Bytes32LinkedList storage deque, Iterator it, bytes32 data) internal {
         initialize(deque, false);
 
         Iterator other = deque._data[Iterator.unwrap(it)].next;
@@ -115,7 +115,7 @@ library Deque {
         deque._data[Iterator.unwrap(it)].next = deque._data[Iterator.unwrap(other)].previous = Iterator.wrap(uint32(deque._data.length - 1));
     }
 
-    function remove(Bytes32Deque storage deque, Iterator it) internal returns (bytes32) {
+    function remove(Bytes32LinkedList storage deque, Iterator it) internal returns (bytes32) {
         require(!isNull(it), "invalid item");
         Node memory n = deque._data[Iterator.unwrap(it)];
         deque._data[Iterator.unwrap(n.previous)].next = n.next;

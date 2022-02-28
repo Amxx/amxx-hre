@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../Random.sol";
+import "../math/Random.sol";
 
 contract RandomMock {
     Random.Manifest private _self;

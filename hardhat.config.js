@@ -26,7 +26,7 @@ require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
 
-args.coverage  && require('solidity-coverage');
+argv.coverage  && require('solidity-coverage');
 argv.etherscan && require('@nomiclabs/hardhat-etherscan');
 argv.report    && require('hardhat-gas-reporter');
 

@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import "../../math/FullMath.sol";
 import "./Balances.sol";
 import "./Distributions.sol";
-import "./FullMath.sol";
 
 library Splitters {
     using Balances      for Balances.Fungible;
