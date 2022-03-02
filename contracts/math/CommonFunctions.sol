@@ -74,16 +74,31 @@ library CommonFunctions {
     }
 
     /**
-     *    y ▲                 ┌──
-     *      │              ┌──┘
-     *      │           ┌──┘
-     *      │        ┌──┘
-     *      │     ┌──┘
-     *      │  ┌──┘
-     * ─────┼──┴────────────────────►
-     *      │xstep                  x
+     *    y ▲                 ┌─────
+     *      │     ←xstep→     │
+     *      │           ┌─────┘
+     *      │           │
+     *      │     ┌─────┘
+     *      │     │
+     * ─────┼─────┴─────────────────►
+     *      │                       x
      **/
     function step(uint256 xstep, uint256 x) internal pure returns (uint256) {
         return x / xstep * xstep;
+    }
+
+    /**
+     *    y ▲
+     *      │
+     *      │  ←x1→  ←x1→  ←x1→
+     * ymax │  ┌──┐  ┌──┐  ┌──┐  ┌─
+     *      │  │  │  │  │  │  │  │
+     *      │  │  │  │  │  │  │  │
+     * ─────┼──┴──┴──┴──┴──┴──┴──┴──►
+     *      │     ←x0→  ←x0→  ←x0→  x
+     **/
+    function slots(uint256 x0, uint256 x1, uint256 ymax, uint256 x) internal pure returns (uint256) {
+        uint256 period = x0 + x1;
+        return ymax * ((x + x1) / period - x / period);
     }
 }
