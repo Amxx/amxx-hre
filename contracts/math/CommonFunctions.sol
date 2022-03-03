@@ -28,7 +28,7 @@ library CommonFunctions {
      *      │      x0      x1       x
      **/
     function rectangular(uint256 x0, uint256 x1, uint256 ymax, uint256 x) internal pure returns (uint256) {
-        return heaviside(x0, ymax, x) - heaviside(x, ymax, x1);
+        return heaviside(x0, ymax, x) - heaviside(x1, ymax, x);
     }
 
     /**
