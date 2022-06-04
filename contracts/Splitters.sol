@@ -49,8 +49,8 @@ library Splitters {
             : SafeCast.toUint256(
                 SafeCast.toInt256(FullMath.mulDiv(
                     shares,
-                    self._shares.totalSupply(),
-                    SafeCast.toUint256(SafeCast.toInt256(self._bounty) + self._released.total())
+                    SafeCast.toUint256(SafeCast.toInt256(self._bounty) + self._released.total()),
+                    self._shares.totalSupply()
                 ))
                 -
                 self._released.valueOf(account)
@@ -74,6 +74,6 @@ library Splitters {
 
     function _historicalRewardFraction(Splitter storage self, uint256 amount) private view returns (uint256) {
         uint256 supply = self._shares.totalSupply();
-        return amount > 0 && supply > 0 ? FullMath.mulDiv(amount, supply, _totalHistoricalReward(self)) : 0;
+        return amount > 0 && supply > 0 ? FullMath.mulDiv(amount, _totalHistoricalReward(self), supply) : 0;
     }
 }
