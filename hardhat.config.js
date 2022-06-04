@@ -7,7 +7,7 @@ const argv = require('yargs/yargs')(process.argv.slice(2))
     coverage:      { type: 'boolean',                                          default: false        },
     report:        { type: 'boolean',                                          default: false        },
     // compilations
-    compiler:      { type: 'string',                                           default: '0.8.11'     },
+    compiler:      { type: 'string',                                           default: '0.8.14'     },
     hardfork:      { type: 'string',                                           default: 'london'     },
     mode:          { type: 'string', choices: [ 'production', 'development' ], default: 'production' },
     runs:          { type: 'number',                                           default: 200          },
@@ -26,7 +26,7 @@ require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
 
-args.coverage  && require('solidity-coverage');
+argv.coverage  && require('solidity-coverage');
 argv.etherscan && require('@nomiclabs/hardhat-etherscan');
 argv.report    && require('hardhat-gas-reporter');
 
@@ -44,7 +44,7 @@ module.exports = {
   solidity: {
     compilers: [
       { version: argv.compiler, settings },
-      { version: '0.8.11',      settings },
+      { version: '0.8.14',      settings },
       { version: '0.7.6',       settings },
       { version: '0.6.12',      settings },
       { version: '0.5.16',      settings },
