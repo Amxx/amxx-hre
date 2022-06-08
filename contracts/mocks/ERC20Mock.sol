@@ -4,12 +4,14 @@ pragma solidity ^0.8.0;
 
 import "../tokens/ERC20.sol";
 import "../tokens/ERC20Votes.sol";
+import "../tokens/ERC1363.sol";
 import "../tokens/ERC2612.sol";
 import "../tokens/ERC3156.sol";
 
 contract ERC20Mock is
     ERC20,
     ERC20Votes,
+    ERC1363,
     ERC2612,
     ERC3156
 {
@@ -17,6 +19,10 @@ contract ERC20Mock is
         ERC20(name, symbol)
         EIP712(name, "1")
     {}
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, ERC1363, ERC2612, ERC3156) returns (bool) {
+        return super.supportsInterface(interfaceId);
+    }
 
     function mint(address account, uint256 amount) public {
         _mint(account, amount);

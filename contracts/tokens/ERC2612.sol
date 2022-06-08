@@ -10,6 +10,10 @@ bytes32 constant _PERMIT_TYPEHASH = keccak256("Permit(address owner,address spen
 abstract contract ERC2612 is IERC2612, ERC20, WithUserNonce {
     using ECDSA for bytes32;
 
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IERC2612).interfaceId || super.supportsInterface(interfaceId);
+    }
+
     function DOMAIN_SEPARATOR() public view virtual override(IERC20Permit) returns (bytes32) {
         return _domainSeparatorV4();
     }

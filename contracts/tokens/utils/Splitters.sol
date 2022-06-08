@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
-import "../../math/FullMath.sol";
 import "./Balances.sol";
 import "./Distributions.sol";
 
@@ -47,10 +47,10 @@ library Splitters {
         return shares == 0
             ? 0
             : SafeCast.toUint256(
-                SafeCast.toInt256(FullMath.mulDiv(
+                SafeCast.toInt256(Math.mulDiv(
+                    SafeCast.toUint256(SafeCast.toInt256(self._bounty) + self._released.total()),
                     shares,
-                    SafeCast.toUint256(SafeCast.toInt256(self._bounty) + self._released.total())
-                    self._shares.totalSupply(),
+                    self._shares.totalSupply()
                 ))
                 -
                 self._released.valueOf(account)
@@ -74,6 +74,6 @@ library Splitters {
 
     function _historicalRewardFraction(Splitter storage self, uint256 amount) private view returns (uint256) {
         uint256 supply = self._shares.totalSupply();
-        return amount > 0 && supply > 0 ? FullMath.mulDiv(amount, _totalHistoricalReward(self), supply) : 0;
+        return amount > 0 && supply > 0 ? Math.mulDiv(_totalHistoricalReward(self), amount, supply) : 0;
     }
 }

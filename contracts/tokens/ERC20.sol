@@ -3,10 +3,11 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./utils/Allowances.sol";
 import "./utils/Balances.sol";
 
-contract ERC20 is IERC20, IERC20Metadata {
+contract ERC20 is ERC165, IERC20, IERC20Metadata {
     using Balances   for Balances.Fungible;
     using Allowances for Allowances.Fungible;
 

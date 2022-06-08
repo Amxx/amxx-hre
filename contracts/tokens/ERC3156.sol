@@ -7,6 +7,10 @@ import "./ERC20.sol";
 abstract contract ERC3156 is IERC3156FlashLender, ERC20 {
     bytes32 private constant _RETURN_VALUE = keccak256("ERC3156FlashBorrower.onFlashLoan");
 
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IERC3156FlashLender).interfaceId || super.supportsInterface(interfaceId);
+    }
+
     function maxFlashLoan(address token) public view virtual override returns (uint256) {
         return token == address(this) ? type(uint256).max - ERC20.totalSupply() : 0;
     }
