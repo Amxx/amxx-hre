@@ -6,20 +6,7 @@ const { deploy   } = require('../../../scripts');
 const { expect   } = chai;
 chai.use(solidity);
 
-
-
-
-
-// /* eslint-disable */
-
-// const { BN, constants, expectEvent, expectRevert, time } = require('@openzeppelin/test-helpers');
-// const { expect } = require('chai');
-// const { MAX_UINT256, ZERO_ADDRESS, ZERO_BYTES32 } = constants;
-
-// const ERC20FlashMintMock = artifacts.require('ERC20FlashMintMock');
-// const ERC3156FlashBorrowerMock = artifacts.require('ERC3156FlashBorrowerMock');
-
-describe('ERC20FlashMint', function () {
+describe('ERC3156', function () {
   const accounts      = {};
   const name          = 'My Token';
   const symbol        = 'MTKN';
