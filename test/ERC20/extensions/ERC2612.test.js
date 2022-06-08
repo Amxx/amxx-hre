@@ -24,7 +24,7 @@ describe('ERC2612', function () {
   const domain        = {};
   const initialSupply = ethers.utils.parseEther('100');
 
-  beforeEach(async function () {
+  before(async function () {
     // Set accounts
     await ethers.getSigners().then(([
       holder,
@@ -48,6 +48,12 @@ describe('ERC2612', function () {
     domain.verifyingContract = this.token.address;
 
     // Snapshot
+    __SNAPSHOT_ID__ = await ethers.provider.send('evm_snapshot');
+  });
+
+  beforeEach(async function() {
+    // Reset snapshot
+    await ethers.provider.send('evm_revert', [ __SNAPSHOT_ID__ ])
     __SNAPSHOT_ID__ = await ethers.provider.send('evm_snapshot');
   });
 
