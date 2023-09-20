@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/interfaces/IERC1363.sol";
-import "@openzeppelin/contracts/interfaces/IERC1363Receiver.sol";
-import "@openzeppelin/contracts/interfaces/IERC1363Spender.sol";
-import "./ERC20.sol";
+import { IERC1363         } from "@openzeppelin/contracts/interfaces/IERC1363.sol";
+import { IERC1363Receiver } from "@openzeppelin/contracts/interfaces/IERC1363Receiver.sol";
+import { IERC1363Spender  } from "@openzeppelin/contracts/interfaces/IERC1363Spender.sol";
+import { ERC20            } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 abstract contract ERC1363 is IERC1363, ERC20 {
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
-        return interfaceId == type(IERC1363).interfaceId || super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IERC1363).interfaceId;
     }
 
     function transferAndCall(address to, uint256 value) public override returns (bool) {

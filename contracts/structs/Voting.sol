@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./Balances.sol";
-import "./Checkpoints.sol";
+import {Balances    } from "./Balances.sol";
+import {Checkpoints } from "./Checkpoints.sol";
 
 library Voting {
     using Balances    for Balances.Fungible;

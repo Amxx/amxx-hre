@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-
 library Allowances {
     struct Fungible {
         mapping(address => mapping(address => uint256)) _allowances;

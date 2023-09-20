@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/utils/math/SafeCast.sol";
-import "./Balances.sol";
-import "./Distributions.sol";
+import { Math          } from "@openzeppelin/contracts/utils/math/Math.sol";
+import { SafeCast      } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import { Balances      } from "./Balances.sol";
+import { Distributions } from "./Distributions.sol";
 
 library Splitters {
     using Balances      for Balances.Fungible;

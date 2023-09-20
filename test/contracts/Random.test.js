@@ -1,9 +1,5 @@
-const { ethers   } = require('hardhat');
-const chai         = require('chai');
-const { solidity } = require('ethereum-waffle');
-const { deploy   } = require('../scripts');
-const { expect   } = chai;
-chai.use(solidity);
+const { expect } = require('chai');
+const { deploy } = require('../../scripts');
 
 describe('Random', function () {
     beforeEach(async function () {
@@ -19,12 +15,12 @@ describe('Random', function () {
 
         expect(await this.instance.remaining()).to.be.equal(0);
 
-        await expect(this.instance.put(17)).to.be.not.reverted;
+        await expect(this.instance.put(17n)).to.be.not.reverted;
 
         expect(await this.instance.remaining()).to.be.equal(1);
 
         await expect(this.instance.draw())
-        .to.emit(this.instance, 'ReturnValue').withArgs(17);
+        .to.emit(this.instance, 'ReturnValue').withArgs(17n);
 
         expect(await this.instance.remaining()).to.be.equal(0);
 
@@ -36,16 +32,16 @@ describe('Random', function () {
 
         expect(await this.instance.remaining()).to.be.equal(0);
 
-        await expect(this.instance.put(17)).to.be.not.reverted;
-        await expect(this.instance.put(42)).to.be.not.reverted;
+        await expect(this.instance.put(17n)).to.be.not.reverted;
+        await expect(this.instance.put(42n)).to.be.not.reverted;
 
         expect(await this.instance.remaining()).to.be.equal(2);
 
         expect(await Promise.all(Array(2).fill().map(_ => this.instance.draw()
             .then(tx      => tx.wait())
-            .then(receipt => receipt.events.find(event => event.event === 'ReturnValue'))
-            .then(event   => event.args.result.toNumber())
-        ))).to.have.members([ 17, 42 ]);
+            .then(receipt => receipt.logs.find(event => event.fragment.name === 'ReturnValue'))
+            .then(event   => event.args[0])
+        ))).to.have.members([ 17n, 42n ]);
 
         expect(await this.instance.remaining()).to.be.equal(0);
 
@@ -53,7 +49,7 @@ describe('Random', function () {
     });
 
     it('setup → draw', async function () {
-        const values = Array.range(42);
+        const values = Array.range(42).map(BigInt);
 
         await expect(this.instance.draw()).to.be.reverted;
 
@@ -65,8 +61,8 @@ describe('Random', function () {
 
         await Promise.all(values.map(_ => this.instance.draw()
             .then(tx      => tx.wait())
-            .then(receipt => receipt.events.find(event => event.event === 'ReturnValue'))
-            .then(event   => event.args.result.toNumber())
+            .then(receipt => receipt.logs.find(event => event.fragment.name === 'ReturnValue'))
+            .then(event   => event.args[0])
         )).then(results => expect(results).to.have.members(values));
 
         expect(await this.instance.remaining()).to.be.equal(0);
