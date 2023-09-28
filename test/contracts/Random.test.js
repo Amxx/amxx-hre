@@ -39,7 +39,7 @@ describe('Random', function () {
 
         expect(await Promise.all(Array(2).fill().map(_ => this.instance.draw()
             .then(tx      => tx.wait())
-            .then(receipt => receipt.logs.find(event => event.fragment.name === 'ReturnValue'))
+            .then(receipt => receipt.logs.find(event => event.eventName === 'ReturnValue'))
             .then(event   => event.args[0])
         ))).to.have.members([ 17n, 42n ]);
 
@@ -61,7 +61,7 @@ describe('Random', function () {
 
         await Promise.all(values.map(_ => this.instance.draw()
             .then(tx      => tx.wait())
-            .then(receipt => receipt.logs.find(event => event.fragment.name === 'ReturnValue'))
+            .then(receipt => receipt.logs.find(event => event.eventName === 'ReturnValue'))
             .then(event   => event.args[0])
         )).then(results => expect(results).to.have.members(values));
 
